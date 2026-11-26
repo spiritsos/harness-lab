@@ -86,3 +86,7 @@ def test_lint_reports_layer_violation():
         assert run_hook("lint.py", {"tool_name": "Write", "tool_input": {"file_path": str(tmp)}}) == 2
     finally:
         tmp.unlink()
+
+
+def test_stop_hook_allows_resumed_stop():
+    assert run_hook("tests.py", {"stop_hook_active": True}) == 0  # 무한 루프 방지
