@@ -52,3 +52,42 @@ def create_order(req: OrderCreate, created_at: str | None = None):
     conn.commit()
     conn.close()
     return {"order_no": order_no, "customer": req.customer, "total": total, "status": "PENDING"}
+
+
+class OrderNotFound(Exception):
+    pass
+
+
+class InvalidTransition(Exception):
+    pass
+
+
+CANCELLABLE = {"PAID"}
+
+
+def cancel_order(order_no: str):
+    """PAID 상태의 주문만 취소한다. (docs/domain.md)"""
+    conn = get_conn()
+    row = conn.execute("SELECT status FROM orders WHERE order_no = ?", (order_no,)).fetchone()
+    if row is None:
+        conn.close()
+        raise OrderNotFound(order_no)
+    if row["status"] not in CANCELLABLE:
+        conn.close()
+        raise InvalidTransition(row["status"])
+    cancelled_at = datetime.now().isoformat(timespec="seconds")
+    conn.execute(
+        "UPDATE orders SET status = 'CANCELLED', cancelled_at = ? WHERE order_no = ?",
+        (cancelled_at, order_no),
+    )
+    conn.commit()
+    conn.close()
+    return {"order_no": order_no, "status": "CANCELLED", "cancelled_at": cancelled_at}
+
+
+def set_status(order_no: str, status: str) -> None:
+    """테스트·운영 도구용 상태 변경."""
+    conn = get_conn()
+    conn.execute("UPDATE orders SET status = ? WHERE order_no = ?", (status, order_no))
+    conn.commit()
+    conn.close()
