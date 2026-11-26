@@ -15,7 +15,7 @@ def test_list_orders(client):
     client.post("/orders", json={"customer": "lee", "items": [{"product_id": 2, "qty": 1}]})
     r = client.get("/orders")
     assert r.status_code == 200
-    assert [o["customer"] for o in r.json()] == ["lee", "kim"]
+    assert [o["customer"] for o in r.json()["items"]] == ["lee", "kim"]
 
 
 def test_get_order_not_found(client):

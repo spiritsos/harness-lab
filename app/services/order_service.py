@@ -6,11 +6,30 @@ from app.models import OrderCreate
 COUPONS = {"WELCOME10": 10}  # 할인율(%) 정수
 
 
-def list_orders():
+class InvalidCursor(Exception):
+    pass
+
+
+def list_orders(limit: int = 20, cursor: str | None = None):
+    """최신순 커서 페이지네이션. cursor = 이전 페이지 마지막 주문의 order_no."""
     conn = get_conn()
-    rows = conn.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
+    where, params = [], []
+    if cursor is not None:
+        row = conn.execute("SELECT id FROM orders WHERE order_no = ?", (cursor,)).fetchone()
+        if row is None:
+            conn.close()
+            raise InvalidCursor(cursor)
+        where.append("id < ?")
+        params.append(row["id"])
+    sql = "SELECT * FROM orders"
+    if where:
+        sql += " WHERE " + " AND ".join(where)
+    sql += " ORDER BY id DESC LIMIT ?"
+    rows = conn.execute(sql, (*params, limit + 1)).fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    items = [dict(r) for r in rows[:limit]]
+    next_cursor = items[-1]["order_no"] if len(rows) > limit else None
+    return {"items": items, "next_cursor": next_cursor}
 
 
 def list_products():

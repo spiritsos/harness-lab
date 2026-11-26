@@ -3,7 +3,7 @@
     "id": "F-01",
     "desc": "주문 목록 커서 페이지네이션: GET /orders?limit=20&cursor=<order_no> → {\"items\": [...], \"next_cursor\": order_no|null}. 최신순, limit 1~100 (기본 20)",
     "test": "tests/test_pagination.py",
-    "passes": false
+    "passes": true
   },
   {
     "id": "F-02",

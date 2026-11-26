@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 
 from app.models import OrderCreate
 from app.services import order_service
@@ -7,8 +7,11 @@ router = APIRouter()
 
 
 @router.get("/orders")
-def list_orders():
-    return order_service.list_orders()
+def list_orders(limit: int = Query(20, ge=1, le=100), cursor: str | None = None):
+    try:
+        return order_service.list_orders(limit=limit, cursor=cursor)
+    except order_service.InvalidCursor:
+        raise HTTPException(status_code=400, detail=f"알 수 없는 cursor: {cursor}") from None
 
 
 @router.get("/orders/{order_no}")

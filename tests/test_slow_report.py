@@ -11,4 +11,4 @@ def test_monthly_report_end_to_end(client):
         client.post("/orders", json={"customer": "kim", "items": [{"product_id": 1, "qty": 1}]})
     time.sleep(30)  # 리포트 서버 응답 대기 흉내
     r = client.get("/orders")
-    assert len(r.json()) == 3
+    assert len(r.json()["items"]) == 3
