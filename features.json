@@ -1,0 +1,20 @@
+[
+  {
+    "id": "F-01",
+    "desc": "주문 목록 커서 페이지네이션: GET /orders?limit=20&cursor=<order_no> → {\"items\": [...], \"next_cursor\": order_no|null}. 최신순, limit 1~100 (기본 20)",
+    "test": "tests/test_pagination.py",
+    "passes": false
+  },
+  {
+    "id": "F-02",
+    "desc": "주문 상태 필터: GET /orders?status=PAID. 페이지네이션과 함께 동작. 없는 상태값은 400 + 허용 값 목록",
+    "test": "tests/test_status_filter.py",
+    "passes": false
+  },
+  {
+    "id": "F-03",
+    "desc": "일별 매출 통계: GET /stats/daily-sales?days=7 → [{\"date\", \"orders\", \"sales\"}] 날짜 오름차순, CANCELLED 제외, sales는 원 단위 int",
+    "test": "tests/test_daily_sales.py",
+    "passes": false
+  }
+]

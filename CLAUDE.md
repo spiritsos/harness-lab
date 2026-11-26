@@ -29,6 +29,11 @@ FastAPI + SQLite 주문 관리 API. 도메인 규칙(주문 상태·금액·주�
 - 데이터 확인은 추측하지 말고 MCP `shopdb`(읽기 전용)로 조회한다
 - app/ 코드를 바꾸면 team-conventions Skill로 검사, 구현이 끝나면 code-reviewer에게 리뷰를 맡긴다
 
+## 상태 파일 (장기 작업)
+- `features.json`: 기능 체크리스트. **passes 값만** 바꿀 수 있다. 항목 추가·삭제·설명 수정 금지
+- passes는 `python scripts/check_features.py`로 테스트 통과를 확인한 뒤에만 true로
+- `progress.md`: 세션 끝에 완료·결정(이유)·다음·주의를 추가. 한 세션에 기능 하나, 기능마다 커밋
+
 ## 작업 방식
 - 엔드포인트 추가처럼 2개 이상 파일을 바꾸는 작업은 Plan 모드로 계획부터 제시
 - 끝나면 바꾼 파일 목록과 `python dev.py test` 결과를 보고한다
