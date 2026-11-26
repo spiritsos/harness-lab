@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "shopdb": {
+      "command": "python",
+      "args": ["tools/db_mcp.py"]
+    }
+  }
+}
