@@ -66,3 +66,23 @@ GUARD_CASES = [
 @pytest.mark.parametrize("expected,payload,desc", GUARD_CASES, ids=[c[2] for c in GUARD_CASES])
 def test_guard(expected, payload, desc):
     assert run_hook("guard.py", payload) == expected
+
+
+def test_lint_skips_non_python():
+    assert run_hook("lint.py", {"tool_name": "Edit", "tool_input": {"file_path": "README.md"}}) == 0
+
+
+def test_lint_passes_clean_file():
+    assert (
+        run_hook("lint.py", {"tool_name": "Edit", "tool_input": {"file_path": str(ROOT / "app" / "db.py")}})
+        == 0
+    )
+
+
+def test_lint_reports_layer_violation():
+    tmp = ROOT / "app" / "api" / "_hooktest_tmp.py"
+    tmp.write_text("from app.db import get_conn\n", encoding="utf-8")
+    try:
+        assert run_hook("lint.py", {"tool_name": "Write", "tool_input": {"file_path": str(tmp)}}) == 2
+    finally:
+        tmp.unlink()
