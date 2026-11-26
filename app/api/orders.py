@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
 
-from app.db import get_conn
 from app.models import OrderCreate
 from app.services import order_service
 
@@ -9,10 +8,7 @@ router = APIRouter()
 
 @router.get("/orders")
 def list_orders():
-    conn = get_conn()
-    rows = conn.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
+    return order_service.list_orders()
 
 
 @router.get("/orders/{order_no}")

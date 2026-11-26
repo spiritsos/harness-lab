@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class ProductOut(BaseModel):
     id: int
     name: str
-    price: float
+    price: int
 
 
 class OrderItemIn(BaseModel):

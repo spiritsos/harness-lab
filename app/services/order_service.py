@@ -3,7 +3,21 @@ from datetime import datetime
 from app.db import get_conn
 from app.models import OrderCreate
 
-COUPONS = {"WELCOME10": 0.1}
+COUPONS = {"WELCOME10": 10}  # 할인율(%) 정수
+
+
+def list_orders():
+    conn = get_conn()
+    rows = conn.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def list_products():
+    conn = get_conn()
+    rows = conn.execute("SELECT id, name, price FROM products ORDER BY id").fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 def get_order(order_no: str):
@@ -35,7 +49,7 @@ def create_order(req: OrderCreate, created_at: str | None = None):
         lines.append((p["id"], item.qty, p["price"]))
 
     if req.coupon in COUPONS:
-        total = total * (1 - COUPONS[req.coupon])
+        total = total * (100 - COUPONS[req.coupon]) // 100  # 원 단위 내림
 
     cur = conn.execute(
         "INSERT INTO orders (customer, total, created_at) VALUES (?, ?, ?)",
