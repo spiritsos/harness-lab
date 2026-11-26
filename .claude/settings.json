@@ -6,7 +6,8 @@
       "Bash(python dev.py fmt)",
       "Bash(git status)",
       "Bash(git diff:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(python dev.py test-hooks)"
     ],
     "ask": [
       "Bash(git push:*)",
@@ -20,6 +21,19 @@
       "Bash(wget:*)",
       "Bash(python scripts/reset_db.py)",
       "Bash(rm -rf:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/guard.py"
+          }
+        ]
+      }
     ]
   }
 }
