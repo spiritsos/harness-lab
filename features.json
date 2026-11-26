@@ -15,6 +15,6 @@
     "id": "F-03",
     "desc": "일별 매출 통계: GET /stats/daily-sales?days=7 → [{\"date\", \"orders\", \"sales\"}] 날짜 오름차순, CANCELLED 제외, sales는 원 단위 int",
     "test": "tests/test_daily_sales.py",
-    "passes": false
+    "passes": true
   }
 ]
