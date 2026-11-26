@@ -1,80 +1,31 @@
-# CLAUDE.md
+# Order Service
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+FastAPI + SQLite 주문 관리 API. 도메인 규칙(주문 상태·금액·주문번호)은 @docs/domain.md
 
-> ※ 실습용 예시: `/init`이 만들어 내는 전형적인 초안입니다. 실제 생성 결과는 버전·환경에 따라 다릅니다.
-> 다음 커밋(2-2)에서 이 초안을 사람이 직접 다듬습니다. 두 커밋의 diff를 비교해 보세요.
+## 명령 (이 명령만 쓴다)
+- 테스트: `python dev.py test` — 반드시 통과한 뒤에 "완료"라고 말한다
+- 린트: `python dev.py lint` / 포맷: `python dev.py fmt`
+- `pytest`를 직접 실행하지 않는다. slow 테스트(30초+)까지 돌아간다. 전체 테스트는 `python dev.py test-all`(CI용)
+- 로컬 실행: `python dev.py run`, 샘플 데이터: `python dev.py seed`
 
-## Project Overview
+## 구조
+- `app/api/` 라우터: 요청 검증과 HTTP 응답 변환만
+- `app/services/` 비즈니스 로직과 DB 접근
+- `app/models.py` Pydantic 스키마 / `app/db.py` 연결·마이그레이션
+- `tests/` pytest. API 테스트는 `client` fixture 사용 (임시 DB)
 
-This is an Order Service, a simple order management REST API built with FastAPI and SQLite.
-It provides endpoints for managing products and orders.
+## 규칙
+- API 계층(`app/api/`)에서 `get_conn()`·SQL 직접 호출 금지 → `app/services/`에 함수를 만든다
+  - 기존 코드에 직접 호출이 남아 있어도 따라 하지 않는다 (정리 대상)
+- 금액은 원 단위 `int`. `float` 금지. 할인은 정수 연산 후 내림 (`total * 90 // 100`)
+- `migrations/`의 기존 파일은 수정 금지. 스키마 변경은 새 번호 파일(`003_...sql`)로
+- 새 엔드포인트에는 테스트 필수 (성공 1개 + 실패 1개 이상)
+- 외부에는 `order_no`(A-0000)만 노출. 내부 `id`를 경로·응답에 쓰지 않는다
 
-## Development Commands
+## 금지
+- `scripts/reset_db.py` 실행 금지 (DB 전체 삭제). 필요하면 사람에게 요청
+- `.env` 읽기·출력 금지
 
-### Setup
-```bash
-pip install -r requirements.txt
-python scripts/seed.py
-```
-
-### Running the Application
-```bash
-uvicorn app.main:app --reload
-```
-
-### Testing
-```bash
-pytest
-```
-
-### Resetting the Database
-```bash
-python scripts/reset_db.py
-```
-
-## Architecture
-
-The application follows a layered architecture:
-
-- `app/main.py` - FastAPI application entry point; registers routers and initializes the database
-- `app/api/` - API route handlers
-  - `orders.py` - Order endpoints (list, get, create)
-  - `products.py` - Product endpoints
-- `app/services/` - Business logic
-  - `order_service.py` - Order creation and retrieval logic, coupon handling
-- `app/models.py` - Pydantic models for request/response validation
-- `app/db.py` - Database connection management and migration runner
-- `migrations/` - SQL migration files applied in order
-- `scripts/` - Utility scripts for seeding and resetting the database
-- `tests/` - Pytest test suite
-
-## Database
-
-The application uses SQLite. The database path is configured via the `APP_DB` environment variable
-(defaults to `data/app.db`). Migrations are applied automatically on startup.
-
-Tables:
-- `products` - id, name, price
-- `orders` - id, order_no, customer, total, created_at, status, cancelled_at
-- `order_items` - id, order_id, product_id, qty, unit_price
-
-## Code Style
-
-- Follow PEP 8 guidelines
-- Use type hints where appropriate
-- Write clean, readable, and maintainable code
-- Add docstrings to public functions
-- Keep functions small and focused
-- Handle errors appropriately
-
-## Testing Guidelines
-
-- Write tests for new features
-- Use the `client` fixture from `conftest.py` for API tests
-- Tests use a temporary database
-
-## Important Notes
-
-- Order numbers follow the format `A-XXXX`
-- Coupons are defined in `order_service.py`
+## 작업 방식
+- 엔드포인트 추가처럼 2개 이상 파일을 바꾸는 작업은 Plan 모드로 계획부터 제시
+- 끝나면 바꾼 파일 목록과 `python dev.py test` 결과를 보고한다
