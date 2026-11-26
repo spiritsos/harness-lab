@@ -7,11 +7,20 @@ router = APIRouter()
 
 
 @router.get("/orders")
-def list_orders(limit: int = Query(20, ge=1, le=100), cursor: str | None = None):
+def list_orders(
+    limit: int = Query(20, ge=1, le=100),
+    cursor: str | None = None,
+    status: str | None = None,
+):
     try:
-        return order_service.list_orders(limit=limit, cursor=cursor)
+        return order_service.list_orders(limit=limit, cursor=cursor, status=status)
     except order_service.InvalidCursor:
         raise HTTPException(status_code=400, detail=f"알 수 없는 cursor: {cursor}") from None
+    except order_service.InvalidStatus:
+        allowed = ", ".join(order_service.STATUSES)
+        raise HTTPException(
+            status_code=400, detail=f"알 수 없는 status: {status}. 허용 값: {allowed}"
+        ) from None
 
 
 @router.get("/orders/{order_no}")

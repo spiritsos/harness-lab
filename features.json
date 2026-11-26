@@ -9,7 +9,7 @@
     "id": "F-02",
     "desc": "주문 상태 필터: GET /orders?status=PAID. 페이지네이션과 함께 동작. 없는 상태값은 400 + 허용 값 목록",
     "test": "tests/test_status_filter.py",
-    "passes": false
+    "passes": true
   },
   {
     "id": "F-03",

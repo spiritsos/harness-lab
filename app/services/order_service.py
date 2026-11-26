@@ -10,10 +10,22 @@ class InvalidCursor(Exception):
     pass
 
 
-def list_orders(limit: int = 20, cursor: str | None = None):
+class InvalidStatus(Exception):
+    pass
+
+
+STATUSES = ("PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED")
+
+
+def list_orders(limit: int = 20, cursor: str | None = None, status: str | None = None):
     """최신순 커서 페이지네이션. cursor = 이전 페이지 마지막 주문의 order_no."""
+    if status is not None and status not in STATUSES:
+        raise InvalidStatus(status)
     conn = get_conn()
     where, params = [], []
+    if status is not None:
+        where.append("status = ?")
+        params.append(status)
     if cursor is not None:
         row = conn.execute("SELECT id FROM orders WHERE order_no = ?", (cursor,)).fetchone()
         if row is None:
