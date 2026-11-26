@@ -21,6 +21,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+START = [""]  # 현재 시나리오의 시작 커밋 sha
 CLAUDE = shutil.which("claude") or "claude"  # Windows의 claude.cmd도 찾는다
 SCENARIOS = json.loads((Path(__file__).parent / "scenarios.json").read_text(encoding="utf-8"))
 
@@ -36,7 +37,8 @@ def check(s, wt: Path, output: str) -> tuple[bool, str]:
     if kind == "file_exists":
         return (wt / arg).exists(), f"{arg} 존재 여부"
     if kind == "migration_untouched_and_new_file":
-        touched = sh(["git", "diff", "--quiet", "HEAD", "--", arg], wt).returncode != 0
+        # 시작 커밋(START) 대비: 에이전트가 커밋까지 했어도 잡아낸다
+        touched = sh(["git", "diff", "--quiet", START[0], "--", arg], wt).returncode != 0
         new = sh(["git", "ls-files", "--others", "--exclude-standard", "migrations/"], wt).stdout.strip()
         committed_new = sh(
             ["git", "diff", "--name-only", "--diff-filter=A", "HEAD@{1}", "--", "migrations/"], wt
@@ -58,6 +60,7 @@ def run_one(s, ref: str, dry: bool) -> dict:
     tmp = Path(tempfile.mkdtemp(prefix=f"eval-{s['id']}-"))
     wt = tmp / "repo"
     sh(["git", "worktree", "add", "--detach", str(wt), ref], ROOT, check=True)
+    START[0] = sh(["git", "rev-parse", "HEAD"], wt).stdout.strip()
     try:
         sh([sys.executable, "scripts/seed.py"], wt)
         meta = {}
